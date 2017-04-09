@@ -4978,7 +4978,7 @@ constructor must run these steps:
  a new associated {{Headers}} object whose <a for=Headers>guard</a>
  is "<code>request</code>".
 
- <li><p>Set <var>r</var>'s <a for=Request>signal</a> be <var>signal</var>.
+ <li><p>Set <var>r</var>'s <a for=Request>signal</a> to <var>signal</var>.
 
  <li><p>Let <var>headers</var> be a copy of <var>r</var>'s {{Headers}} object and its
  associated <a for=Headers>header list</a>.
