@@ -5420,17 +5420,22 @@ method, must run these steps:
  {{Headers}} object whose <a for=Headers>guard</a> is
  "<code>immutable</code>".
 
- <li><p>Add the following steps to <var>requestObject</var>'s <a for=Request>signal</a>'s
+ <li>If <var>requestObject</var>'s <a for=Request>signal</a> is not null and its
+ <a for=AbortSignal>aborted flag</a> is set, reject <var>p</var> with an
+ "<code><a exception>AbortError</a></code>" {{DOMException}}, and return <var>p</var>.
+
+ <li><p>Otherwise, if <var>requestObject</var>'s <a for=Request>signal</a> is not null, add the
+ following steps to <var>requestObject</var>'s <a for=Request>signal</a>'s
  <a for=AbortSignal>abort algorithms</a>:
 
  <ol>
-  <li><a lt=terminated for=fetch>Terminate the request</a>
+  <li><p><a lt=terminated for=fetch>Terminate</a> <var>ongoingFetch</var> with reason <i>fatal</i>.
  </ol>
 
  <li>
   <p>Run the following <a>in parallel</a>:
 
-  <p><a for=/>Fetch</a> <var>request</var>.
+  <p><a for=/>Fetch</a> <var>request</var> and let <var>ongoingFetch</var> be the ongoing fetch.
 
   <p>To <a>process response</a> for <var>response</var>, run these substeps:
 
