@@ -4706,6 +4706,7 @@ interface Request {
   readonly attribute RequestRedirect redirect;
   readonly attribute DOMString integrity;
   readonly attribute boolean keepalive;
+  readonly attribute FetchSignal signal;
 
   [NewObject] Request clone();
 };
@@ -4746,8 +4747,8 @@ omitted from <a enum><code>RequestMode</code></a> as it cannot be used nor obser
 is itself associated with <a for=Request>request</a>'s
 <a for=request>header list</a>.
 
-<p>A {{Request}} object has an associated <dfn for=Request>signal</dfn> (a {{AbortSignal}} object),
-which is initially null.
+<p>A {{Request}} object has an associated <dfn for=Request>signal</dfn> (null or a {{FetchSignal}}
+object), which is initially null.
 
 <p>A {{Request}} object's <a for=Body>body</a> is its
 <a for=Request>request</a>'s
@@ -4972,7 +4973,31 @@ constructor must run these steps:
    to <var>method</var>.
   </ol>
 
- <li><p>If <var>init</var>'s <code>signal</code> member is present, let <var>signal</var> be it.
+ <li>
+  <p>If <var>init</var>'s <code>signal</code> member is present, run these substeps:
+
+  <ol>
+   <li><p>If <var>init</var>'s <code>signal</code> member is a {{FetchSignal}} object, set
+   <var>signal</var> to it.
+
+   <li>
+    <p>Otherwise, run these substeps:
+
+    <ol>
+     <li><p>Set <var>signal</var> to a new {{FetchSignal}} object.
+
+     <li>If <var>init</var>'s <code>signal</code> member's <a for=AbortSignal>aborted flag</a> is
+     set, set <var>signal</var>'s <a for=AbortSignal>aborted flag</a>.
+
+     <li>
+      <p>Otherwise, add the following steps to <var>init</var>'s <code>signal</code> member's
+      <a for=AbortSignal>abort algorithms</a>:
+
+      <ol>
+       <li><p><a for="AbortSignal">signal abort</a> on <var>signal</var>.
+      </ol>
+    </ol>
+  </ol>
 
  <li><p>Let <var>r</var> be a new {{Request}} object associated with <var>request</var> and
  a new associated {{Headers}} object whose <a for=Headers>guard</a>
