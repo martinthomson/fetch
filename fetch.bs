@@ -4381,29 +4381,6 @@ method, when invoked, must run these steps:
 <p>The <a>value pairs to iterate over</a> are the return value of running
 <a for="header list">sort and combine</a> with the <a for=Headers>header list</a>.
 
-<h3 id=fetch-signal>Fetch signal</h3>
-
-<pre class=idl>
-[Exposed=(Window,Worker)]
-interface FetchSignal : AbortSignal {
-  // Nothing additional exposed here yet
-};
-</pre>
-
-<h3 id=fetch-controller>Fetch controller</h3>
-
-<pre class=idl>
-[Constructor(), Exposed=(Window,Worker)]
-interface FetchController : AbortController {
-  [SameObject] readonly attribute FetchSignal signal;
-  // Nothing additional exposed here yet
-};
-</pre>
-
-The <dfn attribute for=FetchController><code>signal</code></dfn> attribute must return the value to
-which it was initialized. When a {{FetchController}} is created, the attribute must be initialized
-to a newly created {{FetchSignal}} object.
-
 <h3 id=body-mixin>Body mixin</h3>
 
 <pre class=idl>
@@ -4706,7 +4683,7 @@ interface Request {
   readonly attribute RequestRedirect redirect;
   readonly attribute DOMString integrity;
   readonly attribute boolean keepalive;
-  readonly attribute FetchSignal signal;
+  readonly attribute AbortSignal? signal;
 
   [NewObject] Request clone();
 };
@@ -4747,7 +4724,7 @@ omitted from <a enum><code>RequestMode</code></a> as it cannot be used nor obser
 is itself associated with <a for=Request>request</a>'s
 <a for=request>header list</a>.
 
-<p>A {{Request}} object has an associated <dfn for=Request>signal</dfn> (null or a {{FetchSignal}}
+<p>A {{Request}} object has an associated <dfn for=Request>signal</dfn> (null or an {{AbortSignal}}
 object), which is initially null.
 
 <p>A {{Request}} object's <a for=Body>body</a> is its
@@ -4973,31 +4950,7 @@ constructor must run these steps:
    to <var>method</var>.
   </ol>
 
- <li>
-  <p>If <var>init</var>'s <code>signal</code> member is present, run these substeps:
-
-  <ol>
-   <li><p>If <var>init</var>'s <code>signal</code> member is a {{FetchSignal}} object, set
-   <var>signal</var> to it.
-
-   <li>
-    <p>Otherwise, run these substeps:
-
-    <ol>
-     <li><p>Set <var>signal</var> to a new {{FetchSignal}} object.
-
-     <li>If <var>init</var>'s <code>signal</code> member's <a for=AbortSignal>aborted flag</a> is
-     set, set <var>signal</var>'s <a for=AbortSignal>aborted flag</a>.
-
-     <li>
-      <p>Otherwise, add the following steps to <var>init</var>'s <code>signal</code> member's
-      <a for=AbortSignal>abort algorithms</a>:
-
-      <ol>
-       <li><p><a for="AbortSignal">signal abort</a> on <var>signal</var>.
-      </ol>
-    </ol>
-  </ol>
+ <li><p>If <var>init</var>'s <code>signal</code> member is present, set <var>signal</var> to it.
 
  <li><p>Let <var>r</var> be a new {{Request}} object associated with <var>request</var> and
  a new associated {{Headers}} object whose <a for=Headers>guard</a>
