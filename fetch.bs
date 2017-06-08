@@ -5380,9 +5380,9 @@ method, must run these steps:
  <a for=AbortSignal>aborted flag</a> is set, reject <var>p</var> with an
  "<code><a exception>AbortError</a></code>" {{DOMException}}, and return <var>p</var>.
 
- <li><p>Otherwise, if <var>requestObject</var>'s <a for=Request>signal</a> is not null, add the
- following steps to <var>requestObject</var>'s <a for=Request>signal</a>'s
- <a for=AbortSignal>abort algorithms</a>:
+ <li><p>Otherwise, if <var>requestObject</var>'s <a for=Request>signal</a> is not null,
+ <a lt=add for=AbortSignal>add the following abort steps</a> to <var>requestObject</var>'s
+ <a for=Request>signal</a>:
 
  <ol>
   <li><p><a lt=terminated for=fetch>Terminate</a> <var>ongoingFetch</var> with reason <i>fatal</i>.
