@@ -674,6 +674,11 @@ otherwise it is unset.
 <dfn export for=request id=concept-request-header-list>header list</dfn> (a
 <a for=/>header list</a>). Unless stated otherwise it is empty.
 
+<p>A <a for=/>request</a> has an associated {{AbortSignal}}. Unless stated otherwise, it is null.
+
+Issue: Using an interface above is wrong isn't it? Does that mean we need to create a signal
+concept in the dom spec?
+
 <p>A <a for=/>request</a> has an associated
 <dfn id=unsafe-request-flag export for=request>unsafe-request flag</dfn>. Unless stated otherwise it
 is unset.
@@ -1179,6 +1184,20 @@ or "<code>worker</code>".
  <li><p>If <var>body</var> is null, then <a>queue a fetch task</a> on <var>request</var> to
  <a>process request end-of-body</a> for <var>request</var> and abort these steps.
 
+ <li><p>Let <var>abortCheck</var> be the following steps:
+  <ol>
+   <li><p>If <var>request</var>'s <a for=request>signal</a>'s <a for=AbortSignal>abort flag</a> is
+   set, <a lt=terminated for=fetch>terminate</a> the ongoing fetch with reason <i>fatal</i>.
+   <li><p><a for=ReadableStream>Cancel</a> <var>body</var>'s <a for=body>stream</a> with reason
+   "abort".
+
+    Issue: <a for=ReadableStream>Cancel</a> seems to want a reader, but so does "reading a chunk"
+    below and it doesn't seem to be providing it.
+  </ol>
+ </li>
+
+ <li><p>Run <var>abortCheck</var>.
+
  <li><p>Let <var>read</var> be the result of <a lt="read a chunk" for=ReadableStream>reading a
  chunk</a> from <var>body</var>'s <a for=body>stream</a>.
 
@@ -1187,6 +1206,8 @@ or "<code>worker</code>".
 
   <ol>
    <li><p>Wait for <var>read</var> to be fulfilled or rejected.
+
+   <li><p>Run <var>abortCheck</var>.
 
    <li>
     <p>If <var>read</var> is fulfilled with an object whose <code>done</code> property is false
@@ -1203,6 +1224,8 @@ or "<code>worker</code>".
       for <var>request</var>.
 
       <p class="note no-backref">This step blocks until <var>bs</var> is fully transmitted.
+
+     <li><p>Run <var>abortCheck</var>.
 
      <li><p>Set <var>read</var> to the result of <a lt="read a chunk" for=ReadableStream>reading a
      chunk</a> from <var>body</var>'s <a for=body>stream</a>.
@@ -2825,6 +2848,10 @@ steps:
    <li><p>Set <var>response</var>'s <a for=response>body</a> to
    the result of performing the <a spec=fileapi>read operation</a> on
    <var>blob</var>.
+
+   Issue: <a spec=fileapi>read operation</a> needs the ability to abort mid-read. We either need to change that spec,
+   or hand-wave through it.
+
    <!-- This takes care of setting length, transmitted, and error flag as well -->
 
    <li><p>Return <var>response</var>.
@@ -2898,6 +2925,8 @@ optional <i>CORS flag</i> and <i>CORS-preflight flag</i>, run these steps:
     <var>response</var> to the result of invoking <a for=/>handle fetch</a> for <var>request</var>.
     [[!HTML]] [[!SW]]
 
+    Issue: <a for=/>handle fetch</a> needs to handle aborting, probably.
+
    <li>
     <p>If <var>response</var> is null, <var>request</var> is a <a>subresource request</a>, and
     <var>request</var>'s <a for=request>origin</a> is not
@@ -2906,6 +2935,8 @@ optional <i>CORS flag</i> and <i>CORS-preflight flag</i>, run these steps:
     <a for=url>origin</a>, then set <var>response</var>
     to the result of invoking <a for=/>handle foreign fetch</a> for
     <var>request</var>. [[!SW]]
+
+    Issue: <a for=/>handle foreign fetch</a> needs to handle aborting, probably.
 
    <li>
     <p>If <var>response</var> is not null, then run these substeps:
@@ -4724,8 +4755,8 @@ omitted from <a enum><code>RequestMode</code></a> as it cannot be used nor obser
 is itself associated with <a for=Request>request</a>'s
 <a for=request>header list</a>.
 
-<p>A {{Request}} object has an associated <dfn for=Request>signal</dfn> (null or an {{AbortSignal}}
-object), which is initially null.
+<p>A {{Request}} object has an associated <dfn for=Request>signal</dfn>, an {{AbortSignal}} object,
+which is itself associated with <a for=Request>request</a>'s <dfn for=request>signal</dfn>.
 
 <p>A {{Request}} object's <a for=Body>body</a> is its
 <a for=Request>request</a>'s
@@ -4956,7 +4987,12 @@ constructor must run these steps:
  a new associated {{Headers}} object whose <a for=Headers>guard</a>
  is "<code>request</code>".
 
- <li><p>Set <var>r</var>'s <a for=Request>signal</a> to <var>signal</var>.
+ <li>If <var>signal</var> is not null, <a for=AbortSignal lt=add>add the following abort steps</a>
+ to <var>signal</var>:
+  <ol>
+   <li>Signal abort on <var>r</var>'s <a for=Request>signal</a>.
+  </ol>
+ </li>
 
  <li><p>Let <var>headers</var> be a copy of <var>r</var>'s {{Headers}} object and its
  associated <a for=Headers>header list</a>.
@@ -5376,22 +5412,14 @@ method, must run these steps:
  {{Headers}} object whose <a for=Headers>guard</a> is
  "<code>immutable</code>".
 
- <li>If <var>requestObject</var>'s <a for=Request>signal</a> is not null and its
- <a for=AbortSignal>aborted flag</a> is set, reject <var>p</var> with an
- "<code><a exception>AbortError</a></code>" {{DOMException}}, and return <var>p</var>.
-
- <li><p>Otherwise, if <var>requestObject</var>'s <a for=Request>signal</a> is not null,
- <a lt=add for=AbortSignal>add the following abort steps</a> to <var>requestObject</var>'s
- <a for=Request>signal</a>:
-
- <ol>
-  <li><p><a lt=terminated for=fetch>Terminate</a> <var>ongoingFetch</var> with reason <i>fatal</i>.
- </ol>
+ <li>If <var>requestObject</var>'s <a for=Request>signal</a>'s <a for=AbortSignal>aborted flag</a>
+ is set, reject <var>p</var> with an "<code><a exception>AbortError</a></code>" {{DOMException}},
+ and return <var>p</var>.
 
  <li>
   <p>Run the following <a>in parallel</a>:
 
-  <p><a for=/>Fetch</a> <var>request</var> and let <var>ongoingFetch</var> be the ongoing fetch.
+  <p><a for=/>Fetch</a> <var>request</var>.
 
   <p>To <a>process response</a> for <var>response</var>, run these substeps:
 
