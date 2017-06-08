@@ -1186,13 +1186,21 @@ or "<code>worker</code>".
 
  <li><p>Let <var>abortCheck</var> be the following steps:
   <ol>
-   <li><p>If <var>request</var>'s <a for=request>signal</a>'s <a for=AbortSignal>abort flag</a> is
-   set, <a lt=terminated for=fetch>terminate</a> the ongoing fetch with reason <i>fatal</i>.
-   <li><p><a for=ReadableStream>Cancel</a> <var>body</var>'s <a for=body>stream</a> with reason
-   "abort".
+   <li>
+    <p>If <var>request</var>'s <a for=request>signal</a>'s <a for=AbortSignal>abort flag</a> is
+   set:
 
-    Issue: <a for=ReadableStream>Cancel</a> seems to want a reader, but so does "reading a chunk"
-    below and it doesn't seem to be providing it.
+    <ol>
+     <li><a lt=terminated for=fetch>terminate</a> the ongoing fetch with reason <i>fatal</i>.
+     <li><p><a for=ReadableStream>Cancel</a> <var>body</var>'s <a for=body>stream</a> with reason
+     "abort".
+
+      Issue: <a for=ReadableStream>Cancel</a> seems to want a reader, but so does "reading a chunk"
+      below and it doesn't seem to be providing it.
+
+     <li><p>Abort these steps.
+    </ol>
+   </li>
   </ol>
  </li>
 
