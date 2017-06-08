@@ -5121,6 +5121,9 @@ must return <a for=Request>request</a>'s
 must return true if <a for=Request>request</a>'s <a>keepalive flag</a>
 is set, and false otherwise.
 
+<p>The <dfn attribute for=Request><code>signal</code></dfn> attribute's getter must return the
+associated <a for="Request">signal</a>.
+
 <hr>
 
 <p>The <dfn method for=Request><code>clone()</code></dfn> method, when invoked, must
