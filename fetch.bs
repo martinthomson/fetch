@@ -3814,6 +3814,7 @@ steps:
  whose <a for=request>method</a> is `<code>OPTIONS</code>`,
  <a for=request>url</a> is <var>request</var>'s
  <a for=request>current url</a>,
+ <a for=request>service-workers mode</a> is "<code>none</code>",
  <a for=request>initiator</a> is <var>request</var>'s
  <a for=request>initiator</a>,
  <a for=request>destination</a> is <var>request</var>'s
